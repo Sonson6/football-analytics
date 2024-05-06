@@ -1,0 +1,77 @@
+[tool.poetry]
+name = "football-analytics"
+version = "0.1.0"
+description = ""
+authors = ["Nelson Castro <nelsoncastro@hotmail.fr>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.9"
+pandas = "^2.2.0"
+requests = "^2.31.0"
+beautifulsoup4 = "^4.12.3"
+lxml = "^5.1.0"
+fastapi = "^0.109.2"
+uvicorn = {extras = ["standard"], version = "^0.27.0.post1"}
+psycopg2-binary = "^2.9.9" # Add to modify the psycopg2 version to psycopg2 binary to avoid error
+sqlalchemy = "^2.0.27"
+
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.0.0"
+pre-commit = "3.2.0"
+ipykernel = "^6.29.2"
+
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+
+[tool.ruff]
+line-length = 120
+
+[tool.ruff.lint]
+select = [
+    "E",  # pycodestyle errors
+    "W",  # pycodestyle warnings
+    "F",  # pyflakes
+    "I",  # isort
+    "B",  # flake8-bugbear
+    "C4",  # flake8-comprehensions
+    "UP",  # pyupgrade
+]
+ignore = []
+
+# Allow fix for all enabled rules (when `--fix`) is provided.
+fixable = ["ALL"]
+unfixable = []
+
+
+[tool.mypy]
+show_column_numbers= true
+
+[tool.interrogate]
+ignore-init-method = true
+ignore-init-module = true
+ignore-module = true
+exclude = ["setup.py", "docs", "build"]
+
+
+[tool.poe.tasks]
+test         = "pytest -vvv"   # a simple command task
+clean = """
+rm -rf .venv
+       .mypy_cache
+       .ruff_cache
+       .pytest_cache
+        dist
+       ./**/__pycache__
+"""
+install_pre_commit  = "pre-commit install"
+run_pre_commit = "pre-commit run --all-files"
+checks.sequence = ["install_pre_commit", "run_pre_commit"]
+checks.ignore_fail = true
+serve.script = "my_app.service:run(debug=True)"              # python script based task
+tunnel.shell = "ssh -N -L 0.0.0.0:8080:$PROD:8080 $PROD &"   # (posix) shell based task
