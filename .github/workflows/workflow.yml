@@ -51,6 +51,7 @@ jobs:
     #----------------------------------------------
     - name: Run pre-commit checks
       run: |
+        poetry add poethepoet
         poetry run poe checks
 
     - name: Run tests
