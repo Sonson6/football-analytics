@@ -10,12 +10,10 @@ python = "^3.9"
 pandas = "^2.2.0"
 requests = "^2.31.0"
 beautifulsoup4 = "^4.12.3"
-lxml = "^5.1.0"
-fastapi = "^0.109.2"
-uvicorn = {extras = ["standard"], version = "^0.27.0.post1"}
 psycopg2-binary = "^2.9.9" # Add to modify the psycopg2 version to psycopg2 binary to avoid error
 sqlalchemy = "^2.0.27"
 typer = "^0.12.3"
+lxml = "^5.2.2"
 
 
 [tool.poetry.group.dev.dependencies]
