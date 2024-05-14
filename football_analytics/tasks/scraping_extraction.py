@@ -32,7 +32,8 @@ def get_games_url(metadata: dict[str, Any], root_url: str) -> list[str]:
         the leagues of interest in metadata)
 
     Args:
-        metadata (dict[str, Any]): Date based metadata with league of interest and related URLs.
+        metadata (dict[str, Any]): Date based metadata with key configurations, among which PostGreSQL database
+            information if requested.
         root_url (str): Link to the FBRef website (to disappear soon)
 
     Returns:

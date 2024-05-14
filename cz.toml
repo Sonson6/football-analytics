@@ -1,0 +1,6 @@
+[tool.commitizen]
+name = "cz_conventional_commits"
+tag_format = "$version"
+version_provider = "commitizen"
+update_changelog_on_bump = true
+version = "0.1.0"  # This should be your current semver version

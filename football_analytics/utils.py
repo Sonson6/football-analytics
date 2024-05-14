@@ -4,34 +4,85 @@ Created on Sat Feb 18 13:54:51 2023
 @author: nelso
 """
 
-
-from datetime import date
-from typing import Any
+from datetime import date, datetime
+from typing import Any, Union
 
 import numpy as np
 import pandas as pd
-from config import TableMapping
 from sqlalchemy import create_engine
 
 
-def create_metadata(wk_date: str, root_url: str) -> dict[str, Any]:
+def check_date_format(wk_date: str) -> None:
+    """Check format of working dates.
+
+    Args:
+        wk_date (str): working date to check.
+
+    Raises:
+        ValueError
+    """
+
+    if len(wk_date) < 8:
+        raise ValueError(f"{wk_date} should be in YYYYMMDD format. Please correct")
+
+
+def treat_cli_params(start_date: str, end_date: Union[str, None]) -> Any:
+    """Convert date as string to datetime format.
+
+    Args:
+        start_date (str): start date to scrap.
+        end_date (str): end date to scrap.
+
+    Raises:
+        ValueError
+
+    Returns:
+        _type_: start_date and end_date as datetime.
+    """
+
+    check_date_format(start_date)
+    start_date_dt = datetime.strptime(start_date, "%Y%m%d")
+
+    if end_date:
+        check_date_format(end_date)
+        end_date_dt = datetime.strptime(end_date, "%Y%m%d")
+    else:
+        end_date_dt = start_date_dt
+
+    if end_date_dt < start_date_dt:
+        raise ValueError(f"{start_date_dt} should be earlier than {end_date_dt}, please correct.")
+
+    return start_date_dt, end_date_dt
+
+
+def create_metadata(wk_date: str, root_url: str, db_config: Union[None, dict[str, Any]] = None) -> dict[str, Any]:
     """Create the required dictionary to prepare scraping settings.
 
     Args:
         wk_date (str): Game on which the football game statistics scraping will occur.
         root_url (str): Link to the FBRef website (to disappear soon)
+        db_config (Union[None, dict[str, Any]]): database configurations. Defaults to None.
 
     Returns:
-        dict[str, Any]: Date based metadata with league of interest and related URLs.
+        dict[str, Any]: Date based metadata with key configurations, among which PostGreSQL database
+            information if requested.
 
     For LEAGUES_INTEREST, key is the name of the league on the FBRef and the value is the code related to
     each competition. Helps to ignore Women leagues that shares the exact same name that men.
     """
-    return {
-        "LEAGUES_INTEREST": {"Premier-League": 9, "La-Liga": 12, "Bundesliga": 20, "Serie-A": 11, "Ligue-1": 13},
-        "TO_DROP_COLS": ["ID_GAME", "#", "NATION", "POS", "AGE", "MIN"],
-        "URL_WEB": f"{root_url}/en/matches/{wk_date}",
-    }
+
+    if db_config:
+        return {
+            "LEAGUES_INTEREST": {"Premier-League": 9, "La-Liga": 12, "Bundesliga": 20, "Serie-A": 11, "Ligue-1": 13},
+            "TO_DROP_COLS": ["ID_GAME", "#", "NATION", "POS", "AGE", "MIN"],
+            "URL_WEB": f"{root_url}/en/matches/{wk_date}",
+        } | db_config
+    else:
+        return {
+            "LEAGUES_INTEREST": {"Premier-League": 9, "La-Liga": 12, "Bundesliga": 20, "Serie-A": 11, "Ligue-1": 13},
+            "TO_DROP_COLS": ["ID_GAME", "#", "NATION", "POS", "AGE", "MIN"],
+            "URL_WEB": f"{root_url}/en/matches/{wk_date}",
+        }
 
 
 def get_dates_list() -> list[str]:
@@ -66,18 +117,21 @@ def table_creation_query(list_cols: list[str], table_name: str) -> str:
     return full_query
 
 
-def read_data_from_postgres(table_name: str, **kwargs) -> pd.DataFrame:  # type: ignore
+def read_data_from_postgres(table_name: str, metadata: Union[dict[str, Any], None], **kwargs) -> pd.DataFrame:  # type: ignore
     """Read dataframe from PostGreSQL.
 
     Args:
         table_name (str): Name of PostGreSQL table.
+        metadata (dict[str, Any]): Database configuration.
 
     Returns:
         pd.DataFrame: Dataset read from PostGreSQL.
     """
 
-    config = TableMapping.config
-    conn_string = f'postgresql://{config["user"]}:{config["password"]}@{config["host"]}/{config["database"]}'
+    if not metadata:
+        return
+
+    conn_string = f'postgresql://{metadata["user"]}:{metadata["password"]}@{metadata["host"]}/{metadata["database"]}'
 
     db = create_engine(conn_string)
     conn = db.connect()

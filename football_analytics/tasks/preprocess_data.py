@@ -10,9 +10,8 @@ from typing import Any
 
 import numpy as np
 import pandas as pd
-from config import TableMapping, Tables
 
-from football_analytics.config import PlayerExtendCols, PlayerGeneralCols
+from football_analytics.config import PlayerExtendCols, PlayerGeneralCols, TableMapping, Tables
 from football_analytics.tasks.scraping_extraction import get_game_data
 
 
@@ -60,7 +59,8 @@ def preprocess_game_data(date: str, games_url: list[str], metadata: dict[str, An
     Args:
         date (str): Game on which the football game statistics scraping will occur.
         games_url (list[str]): Links to football games statistics.
-        metadata (dict[str, Any]): Date based metadata with league of interest and related URLs.
+        metadata (dict[str, Any]): Date based metadata with key configurations, among which PostGreSQL database
+            information if requested.
     """
 
     # to_drop_cols = scraping_metadata["TO_DROP_COLS"]
