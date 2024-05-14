@@ -15,18 +15,21 @@ fastapi = "^0.109.2"
 uvicorn = {extras = ["standard"], version = "^0.27.0.post1"}
 psycopg2-binary = "^2.9.9" # Add to modify the psycopg2 version to psycopg2 binary to avoid error
 sqlalchemy = "^2.0.27"
+typer = "^0.12.3"
 
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.0.0"
 pre-commit = "3.2.0"
 ipykernel = "^6.29.2"
-
-
+commitizen = "^3.25.0"
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+fbref-scrap = "football_analytics.__main__:app"
 
 
 [tool.ruff]
@@ -61,6 +64,7 @@ exclude = ["setup.py", "docs", "build"]
 
 [tool.poe.tasks]
 test         = "pytest -vvv"   # a simple command task
+commit = "cz commit"
 clean = """
 rm -rf .venv
        .mypy_cache

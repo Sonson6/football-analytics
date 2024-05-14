@@ -3,7 +3,7 @@ from enum import Enum
 from typing import Union
 
 
-def load_postgres_config(filename: str = "database.ini", section: str = "postgresql") -> dict[str, str]:
+def load_postgres_config(filename: Union[str, None], section: str = "postgresql") -> Union[dict[str, str], None]:
     """Read configuration file with credentials.
 
     Args:
@@ -18,18 +18,21 @@ def load_postgres_config(filename: str = "database.ini", section: str = "postgre
     """
     parser = ConfigParser()
 
-    my_reader = parser.read(filename)
-    if not my_reader:
-        my_reader = parser.read(f"../{filename}")
+    if filename:
+        my_reader = parser.read(filename)
+        if not my_reader:
+            my_reader = parser.read(f"../{filename}")
 
-    # get section, default to postgresql
-    config = {}
-    if parser.has_section(section):
-        params = parser.items(section)
-        for param in params:
-            config[param[0]] = param[1]
+        # get section, default to postgresql
+        config = {}
+        if parser.has_section(section):
+            params = parser.items(section)
+            for param in params:
+                config[param[0]] = param[1]
+        else:
+            raise Exception(f"Section {section} not found in the {filename} file")
     else:
-        raise Exception(f"Section {section} not found in the {filename} file")
+        config = None
 
     return config
 
@@ -588,8 +591,6 @@ class TableMapping:
     """Class to map main SQL table informations in a dictionary that can
     be used anywhere on the script.
     """
-
-    config = load_postgres_config()
 
     def __init__(self, enhanced: bool = False) -> None:
         """Class Instantiation."""
